@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sheets Scanner - UITBOEKEN</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { background: #C0C0C0; font-family: "MS Sans Serif", Tahoma, sans-serif; padding: 16px; }
+    h1 { background: #000080; color: white; padding: 4px; margin: 0 0 12px; font-size: 18px; }
+    #reader { width: 100%; max-width: 400px; height: 400px; border: 2px solid #000; background: #FFF; margin: 0 auto; }
+    #popup { display:none; position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); background:#FFF; border:2px solid #000; padding:20px; font-size:16px; }
+  </style>
+</head>
+<body>
+  <h1>Sheets Scanner – UITBOEKEN</h1>
+  <div id="reader"></div>
+  <div id="popup"></div>
+  <audio id="beep"><source src="assets/beep.mp3" type="audio/mpeg"></audio>
+  <script>
+    const pop = document.getElementById('popup');
+    const beep = document.getElementById('beep');
+    const scriptURL = "JE_WEB_APP_URL_HIER";
+
+    function playBeep(){ beep.play(); }
+
+    function showPopup(name,price){
+      pop.innerHTML = `Naam: ${name}<br>Prijs: ${price}`;
+      pop.style.display = 'block';
+      setTimeout(() => { pop.style.display='none'; startScanner(); }, 2000);
+    }
+
+    function startScanner(){
+      const scanner = new Html5Qrcode("reader");
+      scanner.start({ facingMode: "environment" }, { fps: 10, qrbox:300 },
+        decoded => {
+          playBeep();
+          scanner.stop();
+          fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify({ type: 'uit', barcode: decoded, aantal:1 })
+          }).then(r=>r.json()).then(data => {
+            showPopup(data.naam || 'Onbekend', data.prijs || '–');
+          });
+        },
+        err => {}
+      );
+    }
+
+    startScanner();
+  </script>
+</body>
+</html>
