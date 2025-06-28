@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Sheets Scanner - INKOPEN</title>
+  <title>Sheets Scanner - INBOEKEN</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
   <style>
     body {
@@ -50,11 +50,11 @@
   </style>
 </head>
 <body>
-  <h1>Sheets Scanner – INKOPEN</h1>
+  <h1>Sheets Scanner – INBOEKEN</h1>
   <div id="reader"></div>
   <button onclick="startScanner()">Start Scanner</button>
   <div id="form" style="display:none;">
-    <div class="field"><label>Productnaam:</label><input type="text" id="Productnaam"><button onclick="wijzigNaam()">Naam wijzigen</button></div>
+    <div class="field"><label>Naam:</label><input type="text" id="naam"><button onclick="wijzigNaam()">Naam wijzigen</button></div>
     <div class="field"><label>Prijs:</label><input type="text" id="prijs"><button onclick="wijzigPrijs()">Prijs wijzigen</button></div>
     <div class="field"><label>Aantal:</label><input type="number" id="aantal" value="1"></div>
     <div class="field"><button onclick="inboeken()">Inboeken</button></div>
@@ -62,30 +62,50 @@
   <div id="status"></div>
   <audio id="beep"><source src="assets/beep.mp3" type="audio/mpeg"></audio>
   <script>
-    const scriptURL = "https://script.google.com/macros/library/d/1rF1kcrOxo-Mbamm9nhG2UDF5p-IGLoD_VQSryzSkO18r8yGAgOLz5Peh/2";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzEo9E4FdKHm8w1bgOXuZL3irAF5RvrKBWKGjh3xUCx2gnyl93FpV_T73rooZvpX8tL/exec";
     const beep = document.getElementById('beep');
 
     function playBeep() { beep.play(); }
-    function wijzigNaam() { document.getElementById('Productnaam').value = prompt('Nieuwe naam:', document.getElementById('Productnaam').value); }
-    function wijzigPrijs() { document.getElementById('prijs').value = prompt('Nieuwe prijs:', document.getElementById('prijs').value); }
+    function wijzigNaam() { document.getElementById('naam').value = prompt('Nieuwe naam:', document.getElementById('naam').value) || ''; }
+    function wijzigPrijs() { document.getElementById('prijs').value = prompt('Nieuwe prijs:', document.getElementById('prijs').value) || ''; }
     function inboeken() {
-      const barcode = document.getElementById('status').innerText.replace('Gescand: ', '');
-      const naam = document.getElementById('Productnaam').value;
-      const prijs = document.getElementById('prijs').value;
+      console.log('Inboeken functie gestart');
+      const statusText = document.getElementById('status').innerText;
+      let barcode = statusText.replace('Gescand: ', '').trim();
+      if (!barcode) {
+        document.getElementById('status').innerText = 'Geen barcode gevonden. Scan eerst.';
+        return;
+      }
+
+      const naam = document.getElementById('naam').value.trim();
+      const prijs = document.getElementById('prijs').value.trim();
       const aantal = document.getElementById('aantal').value;
+
+      if (!aantal || aantal <= 0) {
+        document.getElementById('status').innerText = 'Ongeldig aantal. Voer een positief getal in.';
+        return;
+      }
+
+      document.getElementById('status').innerText = 'Bezig met inboeken...';
 
       fetch(scriptURL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ barcode, type: 'in', aantal, naam, prijs })
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) throw new Error('Netwerkfout: ' + response.status);
+        return response.json();
+      })
       .then(data => {
         document.getElementById('status').innerText = 'Inboeken gelukt: ' + JSON.stringify(data);
         document.getElementById('form').style.display = 'none';
+        document.getElementById('naam').value = '';
+        document.getElementById('prijs').value = '';
+        document.getElementById('aantal').value = '1';
       })
       .catch(error => {
-        document.getElementById('status').innerText = 'Fout bij inboeken: ' + error;
+        document.getElementById('status').innerText = 'Fout bij inboeken: ' + error.message;
         console.error('Fout:', error);
       });
     }
