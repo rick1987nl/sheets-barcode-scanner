@@ -137,6 +137,8 @@
           scanner.stop().then(() => {
             document.getElementById('form').style.display = 'block';
             document.getElementById('status').innerText = `Gescand: ${decoded}`;
+haalProductOp(decoded); // 👈 Voegt productnaam/prijs automatisch toe
+
           }).catch(err => {
             document.getElementById('status').innerText = 'Fout bij stoppen: ' + err;
           });
