@@ -65,6 +65,23 @@
     const scriptURL = "https://script.google.com/macros/s/AKfycbzEo9E4FdKHm8w1bgOXuZL3irAF5RvrKBWKGjh3xUCx2gnyl93FpV_T73rooZvpX8tL/exec";
     const beep = document.getElementById('beep');
 
+    function haalProductOp(barcode) {
+  const lookupURL = "https://script.google.com/macros/s/JEWEIGENLOOKUPURL/exec?barcode=" + encodeURIComponent(barcode);
+
+  fetch(lookupURL)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('naam').value = data.naam || '';
+      document.getElementById('prijs').value = data.prijs || '';
+      document.getElementById('status').innerText += ` | Product: ${data.naam ?? 'Onbekend'}`;
+    })
+    .catch(err => {
+      console.error("Fout bij ophalen product:", err);
+      document.getElementById('status').innerText += " | Product ophalen mislukt";
+    });
+}
+
+    
     function playBeep() { beep.play(); }
     function wijzigNaam() { document.getElementById('naam').value = prompt('Nieuwe naam:', document.getElementById('naam').value) || ''; }
     function wijzigPrijs() { document.getElementById('prijs').value = prompt('Nieuwe prijs:', document.getElementById('prijs').value) || ''; }
