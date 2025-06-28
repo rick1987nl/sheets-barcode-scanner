@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Sheets Scanner - INBOEKEN</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
   <style>
     body {
       background-color: #C0C0C0;
@@ -50,8 +50,9 @@
   </style>
 </head>
 <body>
-  <h1>Sheets Scanner – INBOEKEN</h1>
+  <h1>Sheets Scanner – INBOEKEN</h1>
   <div id="reader"></div>
+  <button onclick="startScanner()">Start Scanner</button>
   <div id="form" style="display:none;">
     <div class="field"><label>Naam:</label><input type="text" id="naam"><button onclick="wijzigNaam()">Naam wijzigen</button></div>
     <div class="field"><label>Prijs:</label><input type="text" id="prijs"><button onclick="wijzigPrijs()">Prijs wijzigen</button></div>
@@ -64,10 +65,30 @@
     const scriptURL = "https://script.google.com/macros/s/AKfycbzEo9E4FdKHm8w1bgOXuZL3irAF5RvrKBWKGjh3xUCx2gnyl93FpV_T73rooZvpX8tL/exec";
     const beep = document.getElementById('beep');
 
-    function playBeep(){ beep.play(); }
-    function wijzigNaam(){}
-    function wijzigPrijs(){}
-    function inboeken(){}
+    function playBeep() { beep.play(); }
+    function wijzigNaam() { document.getElementById('naam').value = prompt('Nieuwe naam:', document.getElementById('naam').value); }
+    function wijzigPrijs() { document.getElementById('prijs').value = prompt('Nieuwe prijs:', document.getElementById('prijs').value); }
+    function inboeken() {
+      const barcode = document.getElementById('status').innerText.replace('Gescand: ', '');
+      const naam = document.getElementById('naam').value;
+      const prijs = document.getElementById('prijs').value;
+      const aantal = document.getElementById('aantal').value;
+
+      fetch(scriptURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ barcode, type: 'in', aantal, naam, prijs })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('status').innerText = 'Inboeken gelukt: ' + JSON.stringify(data);
+        document.getElementById('form').style.display = 'none';
+      })
+      .catch(error => {
+        document.getElementById('status').innerText = 'Fout bij inboeken: ' + error;
+        console.error('Fout:', error);
+      });
+    }
 
     function startScanner() {
       const scanner = new Html5Qrcode("reader");
@@ -76,15 +97,22 @@
         { fps: 10, qrbox: 300 },
         decoded => {
           playBeep();
-          scanner.stop();
-          document.getElementById('form').style.display = 'block';
-          // Oproep backend hier...
+          scanner.stop().then(() => {
+            document.getElementById('form').style.display = 'block';
+            document.getElementById('status').innerText = `Gescand: ${decoded}`;
+          }).catch(err => {
+            document.getElementById('status').innerText = 'Fout bij stoppen: ' + err;
+          });
         },
-        error => {}
-      );
+        error => {
+          document.getElementById('status').innerText = 'Scanfout: ' + error;
+          console.error(error);
+        }
+      ).catch(err => {
+        document.getElementById('status').innerText = 'Startfout: ' + err;
+        console.error('Scanner start mislukt:', err);
+      });
     }
-
-    startScanner();
   </script>
 </body>
 </html>
