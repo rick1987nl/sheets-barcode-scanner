@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Sheets Scanner - INBOEKEN</title>
+  <title>Sheets Scanner - INKOPEN</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
   <style>
     body {
@@ -50,11 +50,11 @@
   </style>
 </head>
 <body>
-  <h1>Sheets Scanner – INBOEKEN</h1>
+  <h1>Sheets Scanner – INKOPEN</h1>
   <div id="reader"></div>
   <button onclick="startScanner()">Start Scanner</button>
   <div id="form" style="display:none;">
-    <div class="field"><label>Naam:</label><input type="text" id="naam"><button onclick="wijzigNaam()">Naam wijzigen</button></div>
+    <div class="field"><label>Productnaam:</label><input type="text" id="Productnaam"><button onclick="wijzigNaam()">Naam wijzigen</button></div>
     <div class="field"><label>Prijs:</label><input type="text" id="prijs"><button onclick="wijzigPrijs()">Prijs wijzigen</button></div>
     <div class="field"><label>Aantal:</label><input type="number" id="aantal" value="1"></div>
     <div class="field"><button onclick="inboeken()">Inboeken</button></div>
@@ -66,11 +66,11 @@
     const beep = document.getElementById('beep');
 
     function playBeep() { beep.play(); }
-    function wijzigNaam() { document.getElementById('naam').value = prompt('Nieuwe naam:', document.getElementById('naam').value); }
+    function wijzigNaam() { document.getElementById('Productnaam').value = prompt('Nieuwe naam:', document.getElementById('Productnaam').value); }
     function wijzigPrijs() { document.getElementById('prijs').value = prompt('Nieuwe prijs:', document.getElementById('prijs').value); }
     function inboeken() {
       const barcode = document.getElementById('status').innerText.replace('Gescand: ', '');
-      const naam = document.getElementById('naam').value;
+      const naam = document.getElementById('Productnaam').value;
       const prijs = document.getElementById('prijs').value;
       const aantal = document.getElementById('aantal').value;
 
